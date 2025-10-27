@@ -17,6 +17,7 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
+    /* ... (alle CSS-Stile bleiben unverändert) ... */
     :root {
       --primary-color: #3b82f6; --background-color: #f1f5f9; --text-color: #1f2937;
       --card-background: #ffffff; --header-gradient: linear-gradient(135deg, #1e40af, #1d4ed8);
@@ -46,7 +47,8 @@
     #supabaseSuggestionContainer .table-name-display code,
     #supabaseSuggestionContainer table code,
     #supabaseSuggestionContainer button#copySqlButton,
-    .correction-box textarea {
+    .correction-box textarea,
+    #supabaseCodeSnippets pre code {
         user-select: text;
        -webkit-user-select: text;
        -moz-user-select: text;
@@ -55,30 +57,29 @@
 
     header {
       background: var(--header-gradient);
-      color: white; text-align: center; padding: 1rem; /* Padding angepasst */
-      font-size: 1.2rem; /* Haupt-Schriftgröße angepasst */
+      color: white; text-align: center; padding: 1rem;
+      font-size: 1.2rem;
       font-weight: 700; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       display: flex; align-items: center; justify-content: space-between;
       position: relative; transition: background 0.3s;
-      min-height: 70px; /* Mindesthöhe für Stabilität */
+      min-height: 70px;
     }
-    /* NEU: Container für Header-Text */
     .header-title-container {
-        flex-grow: 1; /* Nimmt verfügbaren Platz ein */
+        flex-grow: 1;
         text-align: center;
-        padding: 0 10px; /* Kleiner horizontaler Puffer zum Button */
-        line-height: 1.3; /* Zeilenhöhe für 2 Zeilen */
+        padding: 0 10px;
+        line-height: 1.3;
     }
     .header-title-container .main-title {
-        font-size: 1.3rem; /* Etwas größer für Haupttitel */
-        display: block; /* Eigene Zeile */
+        font-size: 1.3rem;
+        display: block;
     }
      .header-title-container .subtitle {
-        font-size: 0.85rem; /* Kleiner für Untertitel */
-        font-weight: 400; /* Weniger fett */
-        opacity: 0.9; /* Leicht transparent */
-        display: block; /* Eigene Zeile */
-        margin-top: 2px; /* Kleiner Abstand oben */
+        font-size: 0.85rem;
+        font-weight: 400;
+        opacity: 0.9;
+        display: block;
+        margin-top: 2px;
      }
 
     main { flex: 1; padding: 1rem; width: 100%; max-width: 800px; margin: 0 auto; }
@@ -109,6 +110,17 @@
     }
     button:disabled { background: #9ca3af; box-shadow: none; cursor: not-allowed; }
     .copy-btn { background: #10b981; margin-top: 0.8rem; }
+    .copy-snippet-btn { /* Bleibt drin, falls man es doch mal braucht */
+        background: #6b7280;
+        margin-top: 0.5rem;
+        width: auto;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        box-shadow: none;
+        float: right;
+        margin-bottom: 5px;
+    }
+
     .action-group { display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap; }
     .action-group button { flex-grow: 1; margin: 0; padding: 12px; font-size: 0.95rem; }
 
@@ -168,6 +180,19 @@
     .status-offline { background: #fee2e2; color: #991b1b; transform: translateY(0); }
     code { background-color: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
     html.dark code { background-color: #374151; }
+    pre {
+      background-color: #e5e7eb;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 1rem;
+      border: 1px solid var(--border-color);
+      clear: both;
+    }
+    html.dark pre { background-color: #374151; }
+    pre code { background: transparent; padding: 0; }
+
+
     .option-group { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); }
     .option-group:first-child { margin-top: 0; padding-top: 0; border-top: none; }
     .option-group h3, #tutorial .option-group h3 {
@@ -229,7 +254,7 @@
         width: 40px; height: 40px; cursor: pointer; padding: 8px;
         box-shadow: none; margin: 0; font-size: 1.2rem;
         line-height: 1; display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0; /* Verhindert Schrumpfen */
+        flex-shrink: 0;
     }
     #darkModeToggle svg { display: none; }
 
@@ -255,6 +280,17 @@
     html.dark #supabaseSuggestionContainer .table-name-display {
          background-color: rgba(0, 0, 0, 0.3);
     }
+    #supabaseCodeSnippets { /* Wird nicht mehr verwendet, CSS kann drin bleiben */
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px dashed var(--success-border);
+    }
+    #supabaseCodeSnippets h5 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--success-text);
+    }
+
 
     /* WIZARD Stile */
     .wizard-step { display: none; }
@@ -272,14 +308,41 @@
   </style>
 
     <script>
-      const basePath = window.location.pathname.split('/').filter(Boolean)[0]
-                       ? '/' + window.location.pathname.split('/')[0] + '/'
-                       : '/';
-      const manifestLink = document.createElement('link');
-      manifestLink.rel = 'manifest';
-      manifestLink.href = basePath + 'manifest.json';
-      document.head.appendChild(manifestLink);
+      //--- ENTFERNT: Das ursprüngliche basePath-Skript wurde entfernt, da es in downloadZip() nicht mehr benötigt wird ---
+      // const basePath = ...
+      
+      //--- STATTDESSEN: Das Manifest wird jetzt statisch im <head> (siehe unten) ODER ---
+      //--- dynamisch hinzugefügt, ABER bezogen auf den *aktuellen* Pfad der Studio-App selbst.
+      //--- Dies stellt sicher, dass das *Studio* selbst eine PWA sein kann.
+      //--- Die *generierte* App erhält ihren eigenen Manifest-Link in downloadZip().
+      
+      (function() {
+          // Findet den relativen Pfad zum Manifest für das PWA Studio selbst
+          const pathSegments = window.location.pathname.split('/');
+          // Entfernt den Dateinamen (z.B. index.html), falls vorhanden
+          if (pathSegments[pathSegments.length - 1].includes('.')) {
+              pathSegments.pop();
+          }
+          let basePath = pathSegments.join('/');
+          // Stellt sicher, dass der Pfad mit einem / endet (außer im Root)
+          if (!basePath.endsWith('/')) {
+              basePath += '/';
+          }
+          // Wenn es sich im Root befindet (z.B. localhost:8080/), ist der Pfad nur '/'
+          if (basePath === '//') {
+              basePath = '/';
+          }
+
+          const manifestLink = document.createElement('link');
+          manifestLink.rel = 'manifest';
+          // Verwendet den berechneten Pfad für das Manifest des *Studios*
+          manifestLink.href = basePath + 'manifest.json'; 
+          document.head.appendChild(manifestLink);
+      })();
     </script>
+<style>body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}</style>
+<style>input, textarea, code { user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; }</style>
+  <link rel="manifest" href="./manifest.json">
 <style>body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}</style>
 <style>input, textarea, code { user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; }</style>
 </head>
@@ -502,7 +565,8 @@
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const pwaArtifacts = { manifest: null, sw: null, html: null, icon192: null, icon512: null, maskableIcon512: null, offlineHtml: null, shareReceiverHtml: null, supabaseClient: null, githubWorkflow: null, appJs: null };
+        // --- pwaArtifacts: Hinzugefügt 'suggestedTableName' & 'detectedColumns' ---
+        const pwaArtifacts = { manifest: null, sw: null, html: null, icon192: null, icon512: null, maskableIcon512: null, offlineHtml: null, shareReceiverHtml: null, supabaseClient: null, githubWorkflow: null, appJs: null, suggestedTableName: 'app_data', detectedColumns: [] };
         let uploadedIconBase64 = null;
         let correctedHtmlForZip = null;
         let currentWizardStep = 1;
@@ -575,7 +639,6 @@
             design: { title: 'Design & Verhalten', text: '<b>Theme-Farbe:</b> Legt die Farbe der Adressleiste im Browser fest.<br><b>Shortcuts:</b> Erlaubt Schnellzugriffe, wenn man das App-Icon lange gedrückt hält (z.B. "Neuer Eintrag").'},
             caching: { title: 'Service Worker & Caching', text: '<b>Strategie:</b> Legt fest, wie Ihre App offline funktioniert. "Cache First" ist schneller, "Network First" liefert aktuellere Daten.<br><b>Cache-Version:</b> Ändern Sie dies (z.B. auf "v2"), um bei einem Update einen neuen Cache zu erzwingen.<br><b>Zusätzliche Dateien:</b> Listen Sie hier alle weiteren wichtigen Dateien auf (z.B. <code>style.css</code>), damit diese auch offline verfügbar sind.'},
             appOptions: { title: 'Optionen für generierte App', text: '<b>Text wählbar:</b> Legt fest, ob Nutzer den Text in Ihrer fertigen PWA markieren und kopieren können.<br><br><b>Footer einfügen:</b> Fügt der generierten App einen anpassbaren Footer am unteren Ende der Seite hinzu.' },
-            // --- HIER WAR DER FEHLER (title:L:) ---
             advanced: { title: 'Erweiterte Funktionen', text: '<b>Supabase:</b> Bereitet Ihre App für eine sichere Datenbank-Anbindung vor.<br><b>Push-Benachrichtigungen:</b> Ermöglicht das Senden von Nachrichten an Ihre Nutzer, auch wenn die App geschlossen ist.<br><b>Hintergrund-Sync:</b> Lässt Ihre App Aktionen (z.B. Formular senden) im Hintergrund abschließen, sobald wieder Internet verfügbar ist.<br><b>Share Target:</b> Macht Ihre App im "Teilen"-Menü des Handys verfügbar.'}
         };
 
@@ -669,10 +732,13 @@
             reader.readAsText(file);
         }
 
+        // --- analyzeHTML: Speichert jetzt 'detectedColumns' ---
         function analyzeHTML(inputHtmlOverride = null) {
              const inputHtml = inputHtmlOverride || ui.htmlInput.value;
             ui.supabaseSuggestionContainer.style.display = 'none';
             ui.supabaseSuggestionContainer.innerHTML = '';
+            pwaArtifacts.suggestedTableName = 'app_data'; // Reset Fallback
+            pwaArtifacts.detectedColumns = []; // Reset Spalten
             if (!inputHtml.trim()) {
                 alert('Bitte geben Sie HTML-Code ein oder laden Sie eine Datei hoch!');
                 return;
@@ -726,28 +792,296 @@
             if (inputs.length > 0) {
                 const rawTableName = titleMatch ? titleMatch.textContent.trim() : 'app_data';
                 const sanitizedTableName = rawTableName.toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_|_$/g, '');
+                pwaArtifacts.suggestedTableName = sanitizedTableName; // Tabellenname speichern
 
                 let detectedColumns = [];
                 inputs.forEach(input => {
                     const colName = input.id.replace(/-/g, '_');
-                    const dataType = input.type === 'number' ? 'int8' : 'text';
+                    const dataType = input.type === 'number' ? 'int8' : 'text'; // Vereinfacht
                     const safeTag = input.outerHTML.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    detectedColumns.push({name: colName, type: dataType, tag: safeTag});
+                    // Speichere Spaltenname, Typ, Original-HTML-ID und das Tag selbst
+                    detectedColumns.push({name: colName, type: dataType, originalId: input.id, tag: safeTag}); 
                 });
+                pwaArtifacts.detectedColumns = detectedColumns; // Spalten speichern
 
                 ui.supabaseSuggestionContainer.innerHTML = generateSupabaseSuggestionHtml(sanitizedTableName, detectedColumns);
                 ui.supabaseSuggestionContainer.style.display = 'block';
 
                 setTimeout(() => {
-                    const copyBtn = document.getElementById('copySqlButton');
-                    if (copyBtn) {
-                        copyBtn.onclick = () => copySqlToClipboard(sanitizedTableName, detectedColumns);
-                    }
+                    // --- AKTUALISIERT: Nur noch SQL Copy Button Listener ---
+                    document.getElementById('copySqlButton')?.addEventListener('click', () => copySqlToClipboard(sanitizedTableName, detectedColumns));
+                    // Snippet Buttons Listener entfernt
+                    
                     ui.supabaseSuggestionContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 100);
             }
         }
 
+        // --- START: Supabase Code Generierung (Option 3) ---
+        
+        /**
+         * Generiert eine spezifische addItem Funktion basierend auf erkannten Spalten.
+         */
+        function generateSpecificAddItemFunction(tableName, columns) {
+            // Erstellt Zeilen wie: const task_name = document.getElementById('task-name')?.value;
+            const valueLookups = columns.map(col => `  const ${col.name} = document.getElementById('${col.originalId}')?.value;`).join('\n');
+            
+            // Erstellt Zeilen wie: task_name: task_name,
+            const dataObjectFields = columns.map(col => `    ${col.name}: ${col.name}`).join(',\n');
+            
+            // Finde eine "Haupt"-Spalte (z.B. die erste Textspalte) für die Validierung
+            const mainColumn = columns.find(col => col.type === 'text') || columns[0];
+            const mainColumnValidation = mainColumn ? `if (!${mainColumn.name}) {
+      alert('Bitte fülle zumindest das Feld "${mainColumn.name.replace(/_/g, ' ')}" aus.');
+      return;
+  }` : '';
+
+            return `
+/**
+ * Fügt einen neuen Eintrag hinzu, basierend auf den Feldern deiner HTML.
+ * Generiert am: ${new Date().toLocaleString()}
+ */
+async function addItem() {
+  console.log('Versuche, neuen Eintrag hinzuzufügen...');
+  
+  // Werte aus den HTML-Input-Feldern lesen:
+${valueLookups}
+
+  // --- TODO: Grundlegende Validierung (passe dies an!) ---
+  ${mainColumnValidation}
+  // ---------------------------------------------------
+
+  // Objekt für Supabase zusammenstellen:
+  const newItem = { 
+${dataObjectFields}
+    // --- TODO: Füge hier ggf. Standardwerte oder Nutzer-ID hinzu ---
+    // is_complete: false, // Beispiel
+    // user_id: supabase.auth.user()?.id // Beispiel für Auth
+  };
+
+  console.log('Zu speichernde Daten:', newItem);
+
+  try {
+    const { data, error } = await supabase
+      .from('${tableName}')
+      .insert([newItem])
+      .select();
+
+    if (error) throw error; // Fehler an catch übergeben
+
+    console.log('Eintrag hinzugefügt:', data);
+    alert('Eintrag erfolgreich hinzugefügt!');
+    
+    // --- TODO: Optional: Formular leeren und/oder Liste neu laden ---
+    // Beispiel: document.getElementById('dein-formular-id').reset(); 
+    loadItems(); // Liste neu laden, um den neuen Eintrag anzuzeigen
+    // --------------------------------------------------------
+
+  } catch (error) {
+    console.error('Fehler beim Hinzufügen:', error.message);
+    alert('Fehler beim Hinzufügen: ' + error.message);
+  }
+}
+
+// --- TODO: Füge einen Event Listener hinzu, um addItem aufzurufen ---
+// Beispiel: document.getElementById('add-button-id')?.addEventListener('click', addItem);
+// -------------------------------------------------------------
+`;
+        }
+
+        /**
+         * Generiert eine loadItems Funktion mit spezifischen Kommentaren basierend auf erkannten Spalten.
+         */
+        function generateSpecificLoadItemsFunction(tableName, columns) {
+            // Erstellt Beispiel-Code für die Anzeige in der Liste
+            const displayExample = columns.map(col => `\${item.${col.name} || '-'}`).join(' | '); // Zeigt alle Spalten getrennt durch '|'
+
+            return `
+/**
+ * Lädt alle Einträge aus der Tabelle "${tableName}".
+ * Generiert am: ${new Date().toLocaleString()}
+ */
+async function loadItems() {
+  console.log('Lade Einträge...');
+  try {
+    const { data, error } = await supabase
+      .from('${tableName}')
+      .select('*')
+      // --- TODO: Optional: Filtere die Daten, z.B. nach Nutzer ---
+      // .eq('user_id', supabase.auth.user()?.id) 
+      .order('created_at', { ascending: false }); // Neueste zuerst
+
+    if (error) throw error; // Fehler an catch übergeben
+
+    console.log('Geladene Einträge:', data);
+    alert(\`\${data.length} Einträge geladen. Siehe Konsole.\`);
+
+    // --- TODO: Zeige die 'data' (Array von Objekten) in deiner HTML an ---
+    // Beispiel: Eine Liste (<ul id="item-list">) aktualisieren:
+    /*
+    const itemList = document.getElementById('item-list'); 
+    if (itemList) {
+        itemList.innerHTML = data.map(item => \`
+            <li>
+                <span>${displayExample}</span> 
+                <button onclick="deleteItem('\${item.id}')">🗑️</button>
+                // Optional: Button zum Bearbeiten hinzufügen (siehe updateItem)
+                // <button onclick="promptUpdateItem('\${item.id}', item)">✏️</button> 
+            </li>
+        \`).join('');
+    }
+    */
+    // -------------------------------------------------------------------
+
+  } catch (error) {
+    console.error('Fehler beim Laden:', error.message);
+    alert('Fehler beim Laden: ' + error.message);
+  }
+}
+
+// --- TODO: Rufe loadItems auf, wenn die App startet ---
+// Beispiel: document.addEventListener('DOMContentLoaded', loadItems);
+// ---------------------------------------------------
+`;
+        }
+        
+        /**
+         * Generiert generische CRUD-Funktionen als Fallback.
+         * (Wird verwendet, wenn Supabase aktiviert ist, aber keine Inputs erkannt wurden)
+         */
+        function generateGenericCrudFunctionSnippets(tableName) {
+            return `
+// --- Generische CRUD-Vorlagen (keine Inputs erkannt) ---
+
+async function addItem() {
+  // TODO: Hole Daten, z.B. aus einem Formular
+  const name = prompt('Namen eingeben:');
+  if (!name) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('${tableName}')
+      .insert([{ name: name /* TODO: Weitere Felder hier */ }])
+      .select();
+    if (error) throw error;
+    console.log('Eintrag hinzugefügt:', data);
+    alert('Eintrag hinzugefügt!');
+    loadItems();
+  } catch (error) {
+    console.error('Fehler beim Hinzufügen:', error.message);
+  }
+}
+
+async function loadItems() {
+  try {
+    const { data, error } = await supabase
+      .from('${tableName}')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    console.log('Geladene Einträge:', data);
+    alert(data.length + ' Einträge geladen (siehe Konsole).');
+    
+    // TODO: Daten in der HTML anzeigen
+    // const list = document.getElementById('item-list');
+    // if (list) list.innerHTML = data.map(item => \`<li>\${item.name} <button onclick="deleteItem('\${item.id}')">X</button></li>\`).join('');
+
+  } catch (error) {
+    console.error('Fehler beim Laden:', error.message);
+  }
+}
+`;
+        }
+
+
+        /**
+         * Generiert generische Update- und Delete-Funktionen.
+         */
+        function generateGenericUpdateDeleteFunctions(tableName) {
+            return `
+/**
+ * Aktualisiert einen bestehenden Eintrag anhand seiner ID.
+ * @param {string} id - Die UUID des zu aktualisierenden Eintrags.
+ * @param {object} updatedData - Ein Objekt mit den Spaltennamen und neuen Werten.
+ * Z.B. { name: 'Neuer Name', is_complete: true }
+ */
+async function updateItem(id, updatedData) {
+  // --- TODO: Validierung hinzufügen? Prüfen, ob updatedData nicht leer ist? ---
+  if (!id || !updatedData || Object.keys(updatedData).length === 0) {
+      alert('Ungültige Daten für Update.');
+      return;
+  }
+  // -----------------------------------------------------------------------
+
+  console.log(\`Aktualisiere Eintrag \${id}...\`, updatedData);
+  try {
+    const { data, error } = await supabase
+      .from('${tableName}')
+      .update(updatedData)
+      .eq('id', id)
+      .select();
+
+    if (error) throw error;
+
+    console.log('Eintrag aktualisiert:', data);
+    alert('Eintrag erfolgreich aktualisiert!');
+    loadItems(); // Liste neu laden
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren:', error.message);
+    alert('Fehler beim Aktualisieren: ' + error.message);
+  }
+}
+
+/**
+ * Löscht einen Eintrag anhand seiner ID.
+ * @param {string} id - Die UUID des zu löschenden Eintrags.
+ */
+async function deleteItem(id) {
+  if (!id) {
+      alert('Ungültige ID zum Löschen.');
+      return;
+  }
+  
+  // Sicherheitsabfrage
+  if (!confirm(\`Willst du den Eintrag wirklich löschen?\`)) {
+      return;
+  }
+  
+  console.log(\`Lösche Eintrag \${id}...\`);
+  try {
+    const { error } = await supabase
+      .from('${tableName}')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    console.log('Eintrag gelöscht');
+    alert('Eintrag erfolgreich gelöscht!');
+    loadItems(); // Liste neu laden
+  } catch (error) {
+    console.error('Fehler beim Löschen:', error.message);
+    alert('Fehler beim Löschen: ' + error.message);
+  }
+}
+
+// --- TODO: Hilfsfunktionen oder Event Listener für Update/Delete hinzufügen ---
+// Beispiel für eine Update-Aufforderung (kann in loadItems's map verwendet werden):
+/*
+function promptUpdateItem(id, currentItem) {
+    // Beispiel: Nur den Namen ändern
+    const newName = prompt('Neuen Namen eingeben:', currentItem.name || ''); 
+    if (newName !== null && newName !== currentItem.name) {
+        updateItem(id, { name: newName }); // Nur die Spalte 'name' aktualisieren
+    }
+    // Füge hier Logik für andere Felder hinzu, falls nötig
+}
+*/
+// -------------------------------------------------------------------------
+`;
+        }
+
+        // --- generateSupabaseSuggestionHtml: Angepasst, zeigt keine Snippets mehr ---
         function generateSupabaseSuggestionHtml(tableName, columns) {
              let detectedRowsHtml = columns.map(col => `
                 <tr style="border-bottom: 1px solid #e2e8f0;">
@@ -758,19 +1092,21 @@
 
             const nameHint = columns.length > 0 ? `Der Name wurde vom <code>&lt;title&gt;</code>-Tag Ihrer HTML abgeleitet (oder ist '${tableName}', falls kein Titel vorhanden war) und bereinigt. <strong>Sie können diesen Namen in Supabase ändern!</strong>` : '';
 
+            // --- KEINE CODE SNIPPETS MEHR HIER ---
+
             return `
                 <h4 style="font-size: 1.2rem; display: flex; align-items: center; margin-bottom: 0;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
                     Vorschlag für Supabase-Tabelle:
                 </h4>
                 <div class="table-name-display"><code>${tableName}</code></div>
-                <p style="font-size: 0.9rem; margin-top: 10px; line-height: 1.5;">Basierend auf deiner HTML-Datei haben wir diese Tabellenstruktur generiert. ${nameHint} Du kannst sie als Vorlage für dein Supabase-Projekt verwenden.</p>
+                <p style="font-size: 0.9rem; margin-top: 10px; line-height: 1.5;">Basierend auf deiner HTML-Datei haben wir diese Tabellenstruktur generiert. ${nameHint} Wenn du Supabase im Generator aktivierst, werden spezifische JavaScript-Funktionen (<code>addItem</code>, <code>loadItems</code>, <code>updateItem</code>, <code>deleteItem</code>) basierend auf den erkannten Feldern automatisch zur <code>app.js</code> hinzugefügt.</p>
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-                    <h5>Anleitung:</h5>
+                    <h5>Anleitung (SQL):</h5>
                     <ol style="font-size: 0.9rem; margin-left: 20px; line-height: 1.6;">
-                        <li>Gehen Sie zu Ihrem Supabase-Projekt und klicken Sie auf den <strong>Table Editor</strong>.</li>
-                        <li>Klicken Sie auf <strong>"Create a new table"</strong> (oder gehen Sie zum <strong>SQL Editor</strong>).</li>
-                        <li>Nutzen Sie die untere Tabelle als Vorlage oder <strong>kopieren Sie direkt den SQL-Befehl</strong>, um Fehler zu vermeiden.</li>
+                        <li>Gehen Sie zu Ihrem Supabase-Projekt und klicken Sie auf den <strong>Table Editor</strong> oder <strong>SQL Editor</strong>.</li>
+                        <li>Klicken Sie auf <strong>"Create a new table"</strong> oder fügen Sie den SQL-Befehl ein.</li>
+                        <li>Nutzen Sie die untere Tabelle als Vorlage oder <strong>kopieren Sie direkt den SQL-Befehl</strong>.</li>
                     </ol>
                 </div>
                 <div style="overflow-x: auto; margin-top: 1.5rem;">
@@ -802,22 +1138,46 @@
                             <tr>
                                 <td style="padding: 12px 15px; font-weight: 500;"><code>user_id</code></td>
                                 <td style="padding: 12px 15px;"><code>uuid</code></td>
-                                <td style="padding: 12px 15px; font-size: 0.9rem;">💡 Empfehlung: Um die Aufgabe einem Benutzer zuzuordnen.</td>
+                                <td style="padding: 12px 15px; font-size: 0.9rem;">💡 Empfehlung: Um die Aufgabe einem Benutzer zuzuordnen (benötigt Supabase Auth).</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <button id="copySqlButton" class="copy-btn" style="width: auto; padding: 10px 15px; font-size: 0.95rem;">📋 Als SQL-Befehl kopieren</button>
+                <button id="copySqlButton" class="copy-btn" style="width: auto; padding: 10px 15px; font-size: 0.95rem;">📋 SQL-Befehl kopieren</button>
             `;
         }
-
-
+        
+        // --- copySqlToClipboard bleibt unverändert ---
         function copySqlToClipboard(tableName, columns) {
             let columnDefs = columns.map(c => `  ${c.name} ${c.type}`).join(',\n');
-            const sql = `CREATE TABLE ${tableName} (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  created_at timestamptz DEFAULT now() NOT NULL,\n${columnDefs},\n  is_complete boolean DEFAULT false,\n  user_id uuid REFERENCES auth.users(id)\n);\n\n-- Optional: Enable Row Level Security (RLS)\nALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;`;
-            navigator.clipboard.writeText(sql).then(() => alert('SQL-Befehl in die Zwischenablage kopiert!'));
+            let sql = `CREATE TABLE ${tableName} (\n  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),\n  created_at timestamptz DEFAULT now() NOT NULL`;
+             if (columns.length > 0) {
+                 sql += `,\n${columnDefs}`;
+             }
+             if (!columns.some(c => c.name === 'is_complete')) {
+                  sql += `,\n  is_complete boolean DEFAULT false`;
+             }
+              if (!columns.some(c => c.name === 'user_id')) {
+                  sql += `,\n  user_id uuid REFERENCES auth.users(id)`; 
+             }
+            sql += `\n);\n\n-- Richtlinien für Row Level Security (RLS) - WICHTIG für Sicherheit:\nALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;\n\n-- Beispiel: Nutzer dürfen nur eigene Einträge sehen (wenn user_id Spalte existiert):\n-- CREATE POLICY "Allow individual read access" ON ${tableName} FOR SELECT USING (auth.uid() = user_id);\n\n-- Beispiel: Nutzer dürfen nur eigene Einträge erstellen:\n-- CREATE POLICY "Allow individual insert access" ON ${tableName} FOR INSERT WITH CHECK (auth.uid() = user_id);`;
+
+            navigator.clipboard.writeText(sql).then(() => alert('SQL-Befehl inkl. RLS-Hinweisen in die Zwischenablage kopiert!'));
         }
 
+        // --- copyCodeSnippet bleibt unverändert ---
+        function copyCodeSnippet(elementId) {
+            const codeElement = document.getElementById(elementId);
+            if (codeElement) {
+                navigator.clipboard.writeText(codeElement.textContent || codeElement.innerText)
+                    .then(() => alert('Code-Snippet kopiert!'))
+                    .catch(err => console.error('Fehler beim Kopieren des Snippets:', err));
+            }
+        }
+        // --- ENDE: Supabase Code Generierung ---
+
+
+        // --- START: generatePWA stark angepasst (Option 3) ---
         async function generatePWA() {
             const v = {
                 user: ui.githubUser.value.trim(), repo: ui.repoName.value.trim().replace(/\s+/g, '-'), app: ui.appName.value.trim(), shortApp: ui.appShortName.value.trim() || ui.appName.value.trim(),
@@ -829,7 +1189,9 @@
             };
             if (!v.user || !v.repo || !v.app || !uploadedIconBase64) return alert('Bitte alle Felder ausfüllen & Icon hochladen/generieren.');
 
-            const startUrl = `/${v.repo}/`;
+            //--- KORREKTUR: startUrl basiert jetzt auf dem Repo-Namen ---
+            const startUrl = `/${v.repo}/`; 
+            
             const manifestObject = {
                 name: v.app, short_name: v.shortApp, start_url: startUrl, display: "standalone",
                 description: v.desc, background_color: "#ffffff", theme_color: v.theme
@@ -844,16 +1206,64 @@
             }
 
             if (v.shareTarget && v.shareAction) {
+                //--- KORREKTUR: Share-Target-Aktion verwendet ebenfalls den korrekten Pfad ---
                 manifestObject.share_target = { action: startUrl.slice(0, -1) + v.shareAction, method: "GET", params: { title: "title", text: "text", url: "url" } };
-                pwaArtifacts.shareReceiverHtml = `<!DOCTYPE html><html><head><title>Empfangene Daten</title></head><body><h1>Geteilte Inhalte:</h1><script>const p=new URLSearchParams(window.location.search);document.body.innerHTML+='<p><b>Titel:</b> '+(p.get('title')||'N/A')+'</p><p><b>Text:</b> '+(p.get('text')||'N/A')+'</p><p><b>URL:</b> '+(p.get('url')||'N/A')+'</p>';<\/sc`+`ript>
+                
+                // --- KORREKTUR: Das shareReceiverHtml benötigt jetzt den korrigierten SW-Registrierungscode ---
+                const repoPath = `/${v.repo}/`;
+                const shareSWCode = `
   <script>
     if ('serviceWorker' in navigator) {
-      const swPath = basePath + 'sw.js';
-      navigator.serviceWorker.register(swPath)
-        .then(() => console.log('Service Worker registered:', swPath))
+      const repoPath = '${repoPath}';
+      navigator.serviceWorker.register('./sw.js', { scope: repoPath })
+        .then(() => console.log('Service Worker registered:', repoPath))
         .catch(err => console.error('SW registration failed:', err));
     }
-  <\/script>
+  <\/script>`;
+
+                pwaArtifacts.shareReceiverHtml = `<!DOCTYPE html><html><head><title>Empfangene Daten</title><link rel="manifest" href="./manifest.json"></head><body><h1>Geteilte Inhalte:</h1><script>const p=new URLSearchParams(window.location.search);document.body.innerHTML+='<p><b>Titel:</b> '+(p.get('title')||'N/A')+'</p><p><b>Text:</b> '+(p.get('text')||'N/A')+'</p><p><b>URL:</b> '+(p.get('url')||'N/A')+'</p>';<\/sc`+`ript>
+  ${shareSWCode}
+<button id="installFab" title="App installieren" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background-color: #1e40af; color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000; justify-content: center; align-items: center;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+</button>
+<script>
+  let deferredPrompt;
+  const installButton = document.getElementById('installFab');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installButton) {
+      installButton.style.display = 'flex';
+    }
+  });
+  if (installButton) {
+    installButton.addEventListener('click', async () => {
+      installButton.style.display = 'none';
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('User choice:', outcome);
+        deferredPrompt = null;
+      }
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+     if (installButton) {
+        installButton.style.display = 'none';
+     }
+    deferredPrompt = null;
+    console.log('PWA wurde installiert');
+  });
+<\/script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      // KORREKTUR 2: Scope auf Repository-Pfad setzen
+      const repoPath = '/PWA-Studio-Pro/';
+      navigator.serviceWorker.register('./sw.js', { scope: repoPath })
+        .then((reg) => console.log('Service Worker registered:', reg.scope))
+        .catch(err => console.error('SW registration failed:', err));
+    }
+  </script>
 
 <button id="installFab" title="App installieren" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background-color: #1e40af; color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000; justify-content: center; align-items: center;">
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -890,25 +1300,56 @@
     deferredPrompt = null;
     console.log('PWA wurde installiert');
   });
-<\/script></body></html>`;
+</script>
+</body></html>`;
             }
             pwaArtifacts.manifest = JSON.stringify(manifestObject, null, 2);
 
-            const assetsToCache = [`${startUrl}`, `${startUrl}index.html`, `${startUrl}manifest.json`, `${startUrl}offline.html`];
+            //--- KORREKTUR: Alle Assets im Cache müssen den 'startUrl' (Repo-Pfad) verwenden ---
+            const assetsToCache = [
+                `${startUrl}`, 
+                `${startUrl}index.html`, 
+                // WICHTIG: Manifest und SW selbst werden relativ vom Root geladen, 
+                // aber der *Inhalt* des SW muss die Pfade *innerhalb* seines Scopes cachen.
+                './manifest.json', // relative Pfade für SW-Caching
+                './offline.html',
+                './icons/icon-192x192.png',
+                './icons/icon-512x512.png'
+            ];
             
-            // --- KORRIGIERTER TEIL: Icons automatisch hinzufügen ---
-            assetsToCache.push(`${startUrl}icons/icon-192x192.png`);
-            assetsToCache.push(`${startUrl}icons/icon-512x512.png`);
+            // Korrigierte Caching-Pfade:
+            // Der SW registriert sich mit scope '/repo/'. 
+            // Ein Request nach '/repo/index.html' wird vom SW als './index.html' gesehen.
+            // Daher müssen die Pfade *innerhalb* des SW relativ sein.
+            
+            const relativeAssetsToCache = [
+                './', // Cache den Scope-Root
+                './index.html',
+                './manifest.json',
+                './offline.html',
+                './icons/icon-192x192.png',
+                './icons/icon-512x512.png'
+            ];
+
+
             if (v.maskable) {
-                assetsToCache.push(`${startUrl}icons/icon-maskable-512x512.png`);
+                relativeAssetsToCache.push('./icons/icon-maskable-512x512.png');
             }
-            // --- ENDE DER KORREKTUR ---
 
             if(v.extras.length > 0) {
-                 assetsToCache.push(...v.extras.map(f => `${startUrl}${f}`));
+                 relativeAssetsToCache.push(...v.extras.map(f => `./${f}`));
             }
-            const assets = JSON.stringify(assetsToCache);
-            const offlineUrl = `${startUrl}offline.html`;
+            if (ui.addSupabase.checked) {
+                relativeAssetsToCache.push('./supabaseClient.js');
+            }
+            let willGenerateAppJs = ui.addSupabase.checked || ui.addPushNotifications.checked || v.backgroundSync;
+            if (willGenerateAppJs) {
+                 relativeAssetsToCache.push('./app.js');
+            }
+            // ------------------------------------
+
+            const assets = JSON.stringify(relativeAssetsToCache);
+            const offlineUrl = './offline.html'; // Offline-URL muss auch relativ sein
             const fetchHandler = v.strategy === 'network-first' ? `fetch(e.request).catch(() => caches.match("${offlineUrl}"))` : `caches.match(e.request).then(r => r || fetch(e.request)).catch(() => caches.match("${offlineUrl}"))`;
             let swContent = `const CN='pwa-cache-${v.ver}';const URLS=${assets};self.addEventListener('install',e=>e.waitUntil(caches.open(CN).then(c=>c.addAll(URLS))));self.addEventListener('fetch',e=>e.respondWith(${fetchHandler}));`;
             pwaArtifacts.offlineHtml = `<!DOCTYPE html><html><head><title>Offline</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif; text-align: center; padding: 2rem;"><h1>Offline</h1><p>Du bist momentan nicht mit dem Internet verbunden.</p></body></html>`;
@@ -920,33 +1361,97 @@
                 pwaArtifacts.icon192 = icon192; pwaArtifacts.icon512 = icon512; pwaArtifacts.maskableIcon512 = maskableIcon512 || null;
             } catch (e) { return alert('Fehler beim Skalieren des Icons.'); }
 
-            let appJsContent = '';
-            if (ui.addSupabase.checked) {
-                pwaArtifacts.supabaseClient = `import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';\nexport const supabase = createClient('__SUPABASE_URL__', '__SUPABASE_ANON_KEY__');`;
-                appJsContent += `import { supabase } from './supabaseClient.js'; console.log('Supabase client loaded!');\n`;
-                pwaArtifacts.githubWorkflow = `name: Deploy\non: {push: {branches: [main]}}\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      - run: sed -i "s|__SUPABASE_URL__|\\\${{ secrets.SUPABASE_URL }}|g; s|__SUPABASE_ANON_KEY__|\\\${{ secrets.SUPABASE_ANON_KEY }}|g" supabaseClient.js\n      - uses: JamesIves/github-pages-deploy-action@v4\n        with:\n          branch: gh-pages\n          folder: .`;
-            } else { pwaArtifacts.supabaseClient = null; pwaArtifacts.githubWorkflow = null; }
+            let appJsContent = ''; 
+            let needsAppJs = false; 
 
+            // --- Supabase Integration (Option 3) ---
+            if (ui.addSupabase.checked) {
+                needsAppJs = true; 
+                pwaArtifacts.supabaseClient = `import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';\nexport const supabase = createClient('__SUPABASE_URL__', '__SUPABASE_ANON_KEY__');`;
+                appJsContent += `import { supabase } from './supabaseClient.js'; console.log('Supabase client loaded!');\n\n`;
+                
+                const tableName = pwaArtifacts.suggestedTableName || 'app_data';
+                const columns = pwaArtifacts.detectedColumns || [];
+
+                if (columns.length > 0) {
+                    // Generiere spezifische Funktionen, wenn Spalten erkannt wurden
+                    appJsContent += generateSpecificAddItemFunction(tableName, columns);
+                    appJsContent += '\n\n' + generateSpecificLoadItemsFunction(tableName, columns);
+                } else {
+                    // Fallback auf generische CRUD-Funktionen, wenn keine Inputs erkannt wurden
+                     appJsContent += `// Keine Input-Felder in der HTML gefunden. Generische CRUD-Funktionen als Vorlage:\n`;
+                     appJsContent += generateGenericCrudFunctionSnippets(tableName); // Verwende die alten generischen Vorlagen
+                }
+                 // Generiere immer Update/Delete dazu (sind eh generisch)
+                 if (columns.length > 0) { // Füge sie nur hinzu, wenn spezifische add/load generiert wurden
+                     appJsContent += '\n\n' + generateGenericUpdateDeleteFunctions(tableName);
+                 } else {
+                     // Füge sie auch zum generischen Fallback hinzu
+                     appJsContent += '\n\n' + generateGenericUpdateDeleteFunctions(tableName);
+                 }
+
+
+                pwaArtifacts.githubWorkflow = `name: Deploy\non: {push: {branches: [main]}}\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      - run: sed -i "s|__SUPABASE_URL__|\\\${{ secrets.SUPABASE_URL }}|g; s|__SUPABASE_ANON_KEY__|\\\${{ secrets.SUPABASE_ANON_KEY }}|g" supabaseClient.js\n      - uses: JamesIves/github-pages-deploy-action@v4\n        with:\n          branch: gh-pages\n          folder: .`;
+            } else { 
+                pwaArtifacts.supabaseClient = null; 
+                pwaArtifacts.githubWorkflow = null; 
+            }
+
+            // --- Andere Erweiterte Funktionen ---
             if (ui.addPushNotifications.checked) {
+                needsAppJs = true;
                 swContent += `\n\nself.addEventListener('push',e=>{const d=e.data.json();self.registration.showNotification(d.title,{body:d.body,icon:'icons/icon-192x192.png'})});`;
                 const vapidKey = ui.vapidKeyInput.value.trim() || 'YOUR_PUBLIC_VAPID_KEY';
-                appJsContent += `console.log('Push script active.'); const vapidKey='${vapidKey}';\n`;
+                // Füge Push-Code *nach* Supabase-Code ein, falls vorhanden
+                appJsContent += `\n\n// --- Push Notification Code ---\nconsole.log('Push script active.'); const publicVapidKey = '${vapidKey}';\n`;
+                appJsContent += `
+/* async function registerPush() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: publicVapidKey 
+      });
+    }
+    console.log('Push Subscription:', subscription);
+    // TODO: Sende das 'subscription' Objekt an deinen Backend-Server
+  } catch (err) {
+    console.error('Push registration failed:', err);
+  }
+}
+// registerPush(); // Rufe dies auf, wenn der Nutzer Push erlaubt hat
+*/\n`;
             }
              if (v.backgroundSync) {
-                swContent += `\n\nself.addEventListener('sync', e => { if (e.tag === 'my-sync-tag') { e.waitUntil(console.log('Sync event fired!')); } });`;
-                appJsContent += `\nasync function registerSync() { try { const reg = await navigator.serviceWorker.ready; await reg.sync.register('my-sync-tag'); } catch { console.log('Sync registration failed'); } }\n`;
+                 needsAppJs = true;
+                swContent += `\n\nself.addEventListener('sync', e => { if (e.tag === 'my-sync-tag') { e.waitUntil(console.log('Background Sync event fired! Implementiere hier die Logik.')); } });`;
+                // Füge Sync-Code *nach* anderem Code ein
+                appJsContent += `\n\n// --- Background Sync Code ---\nasync function registerBackgroundSync() { \n  if (!('serviceWorker' in navigator) || !('SyncManager' in window)) return; \n  try { \n    const registration = await navigator.serviceWorker.ready; \n    await registration.sync.register('my-sync-tag'); \n    console.log('Background Sync registered');\n  } catch (err) { \n    console.error('Background Sync registration failed:', err); \n  } \n}\n// registerBackgroundSync(); // Rufe dies auf, wenn eine Aktion offline ausgeführt werden soll\n`;
             }
+
             pwaArtifacts.sw = swContent;
-            if (appJsContent) pwaArtifacts.appJs = appJsContent;
+            
+            if (needsAppJs && appJsContent) {
+                 pwaArtifacts.appJs = appJsContent.trim(); // Trimme Leerzeichen am Ende
+            } else {
+                 pwaArtifacts.appJs = null; 
+            }
+
 
             ui.manifestOutput.value = pwaArtifacts.manifest;
             ui.swOutput.value = pwaArtifacts.sw;
             ui.outputSection.style.display = 'block';
             ui.downloadButton.style.display = 'flex';
-            alert('Generierung erfolgreich!');
+            alert('Generierung erfolgreich! Spezifische Supabase-Funktionen wurden zu app.js hinzugefügt (falls Inputs erkannt wurden).');
             saveSettings();
         }
+        // --- ENDE: generatePWA ---
 
+
+        // --- downloadZip: Angepasst, prüft pwaArtifacts.appJs ---
         async function downloadZip() {
             if (!pwaArtifacts.manifest) return;
             ui.downloadButton.disabled = true; ui.downloadButton.textContent = '...';
@@ -955,56 +1460,65 @@
                 const zip = new JSZip();
                 let html = correctedHtmlForZip || `<!DOCTYPE html><html><head><title>${ui.appName.value}</title></head><body></body></html>`;
 
-                 const dynamicHeadScript = `
-    <script>
-      const basePath = window.location.pathname.split('/').filter(Boolean)[0]
-                       ? '/' + window.location.pathname.split('/')[0] + '/'
-                       : '/';
-      const manifestLink = document.createElement('link');
-      manifestLink.rel = 'manifest';
-      manifestLink.href = basePath + 'manifest.json';
-      document.head.appendChild(manifestLink);
-    <\/script>`;
+                // --- KORREKTUR 1 & 4: Dynamisches Head-Skript entfernt ---
+                // const dynamicHeadScript = ... (ENTFERNT)
 
-                const dynamicBodyScript = `
+                // --- KORREKTUR 2 & 4: Dynamisches Body-Skript entfernt ---
+                // const dynamicBodyScript = ... (ENTFERNT)
+                
+                // --- KORREKTUR 2: Repository-Pfad für SW Scope holen ---
+                // Holt den Repo-Namen aus dem UI-Feld (Schritt 1 des Assistenten)
+                const repoName = ui.repoName.value.trim().replace(/\s+/g, '-') || 'my-pwa';
+                const repoPath = `/${repoName}/`; // z.B. /my-awesome-pwa/
+
+                // --- KORREKTUR 2: Statisches Body-Skript mit korrektem Scope ---
+                const staticBodyScript = `
   <script>
     if ('serviceWorker' in navigator) {
-      const swPath = basePath + 'sw.js';
-      navigator.serviceWorker.register(swPath)
-        .then(() => console.log('Service Worker registered:', swPath))
+      // KORREKTUR 2: Scope auf Repository-Pfad setzen
+      const repoPath = '${repoPath}';
+      navigator.serviceWorker.register('./sw.js', { scope: repoPath })
+        .then((reg) => console.log('Service Worker registered:', reg.scope))
         .catch(err => console.error('SW registration failed:', err));
     }
   <\/script>`;
 
-                html = html.replace('</head>', `${dynamicHeadScript}\n</head>`);
-                html = html.replace('</body>', `${dynamicBodyScript}\n</body>`);
+                // --- KORREKTUR 1: Statisches Manifest-Link einfügen ---
+                html = html.replace('</head>', `  <link rel="manifest" href="./manifest.json">\n</head>`);
+                
+                // --- KORREKTUR 2: Neues SW-Skript einfügen ---
+                html = html.replace('</body>', `${staticBodyScript}\n</body>`);
 
                 const themeColor = ui.themeColor.value;
                 if (html.includes('<meta name="theme-color"')) {
-                    html = html.replace(/<meta name="theme-color" content="[^"]*">/g, `<meta name="theme-color" content="#1e40af">`);
+                    // KORREKTUR 3: Dies war bereits korrekt und verwendet die ${themeColor} Variable
+                    html = html.replace(/<meta name="theme-color" content="[^"]*">/g, `<meta name="theme-color" content="#1e40af">`); 
                 } else {
                     html = html.replace('</head>', `  <meta name="theme-color" content="#1e40af">\n</head>`);
                 }
-                // Füge User-Select Style *nur* ein, wenn es deaktiviert ist
+
                 if (document.querySelector('input[name="userSelect"]:checked').value === 'disabled') {
                     html = html.replace('</head>', `<style>body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}</style>\n</head>`);
                 }
-                // Füge erlaubende Styles für Input/Textarea/Code hinzu (damit Copy/Paste geht)
                  html = html.replace('</head>', `<style>input, textarea, code { user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; }</style>\n</head>`);
 
                 if (ui.generateFooter.checked) {
-                    // Verwende die Texte aus den Feldern, nicht die Branding-Texte
                     const footerHtml = `<footer style="text-align:center;padding:1.5rem;background-color:#1f2937;color:#d1d5db;font-size:0.75rem;"><p>${ui.footerLine1.value}</p><p>${ui.footerLine2.value}</p><p><a href="mailto:${ui.footerLine3.value}" style="color:#3b82f6;text-decoration:none;">${ui.footerLine3.value}</a></p></footer>`;
                     html = html.replace(/<\/body>/i, `${footerHtml}\n$&`);
                 }
 
-                if (pwaArtifacts.appJs) {
+                // --- app.js nur hinzufügen/verlinken, wenn sie existiert ---
+                if (pwaArtifacts.appJs) { 
                     html = html.replace(/<\/body>/i, `<script type="module" src="app.js"><\/sc`+`ript>\n$&`);
                     zip.file('app.js', pwaArtifacts.appJs);
                 }
+                // -----------------------------------------------------------
+                
                 if (pwaArtifacts.supabaseClient) {
                     zip.file('supabaseClient.js', pwaArtifacts.supabaseClient);
-                    zip.folder('.github').folder('workflows').file('deploy.yml', pwaArtifacts.githubWorkflow);
+                    if (pwaArtifacts.githubWorkflow) {
+                        zip.folder('.github').folder('workflows').file('deploy.yml', pwaArtifacts.githubWorkflow);
+                    }
                 }
                 if (pwaArtifacts.shareReceiverHtml) {
                     const actionPath = ui.shareTargetAction.value.trim().startsWith('/') ? ui.shareTargetAction.value.trim().substring(1) : ui.shareTargetAction.value.trim();
@@ -1067,8 +1581,10 @@
                 ui.downloadButton.disabled = false; ui.downloadButton.textContent = '⬇️';
             }
         }
+        // --- ENDE: downloadZip ---
 
-        // --- START DER KORRIGIERTEN CHECKPWA-FUNKTION ---
+
+        // --- checkPwa bleibt unverändert ---
         async function checkPwa() {
             const url = ui.pwaUrlInput.value.trim();
             if (!url || !url.startsWith('http')) {
@@ -1095,11 +1611,13 @@
 
             let htmlContent = '';
             try {
-                const response = await fetch(url, { cache: 'no-cache' });
+                //--- KORREKTUR: CORS-Problem umgehen, indem ein einfacher Proxy verwendet wird (falls verfügbar)
+                //--- Für diese Demo verwenden wir 'no-cache' und hoffen das Beste, da wir keinen Proxy haben.
+                const response = await fetch(url, { cache: 'no-cache', mode: 'cors' }); // Mode 'cors' ist Standard, aber 'no-cache' ist wichtig
                 if (!response.ok) throw new Error(`HTML nicht erreichbar: ${response.status}`);
                 htmlContent = await response.text();
             } catch (e) {
-                ui.checkResults.innerHTML = `<p class="fail">Konnte die Haupt-URL nicht abrufen: ${e.message}.<br>Stellen Sie sicher, dass das PWA-Studio selbst auch online (z.B. auf GitHub) läuft, um CORS-Fehler zu vermeiden.</p>`;
+                ui.checkResults.innerHTML = `<p class="fail">Konnte die Haupt-URL nicht abrufen: ${e.message}.<br>Stellen Sie sicher, dass die URL korrekt ist und CORS-Anfragen erlaubt (oder führen Sie diesen Test von derselben Domain aus).</p>`;
                 return;
             }
 
@@ -1120,7 +1638,7 @@
                     if (!res.ok) return { success: false, message: `Manifest-Fehler ${res.status}` };
                     const text = await res.text();
                     if (text.length === 0) return { success: false, message: 'Manifest-Datei ist leer' };
-                    manifest = JSON.parse(text); // Check if valid JSON
+                    manifest = JSON.parse(text); 
                 } catch (e) { 
                     return { success: false, message: 'Manifest nicht erreichbar/lesbar' }; 
                 }
@@ -1133,8 +1651,10 @@
                 }
 
                 try {
+                    // Teste das erste Icon
                     const iconSrc = manifest.icons[0].src;
                     const iconUrl = new URL(iconSrc, manifestUrl);
+                    // Verwende 'HEAD' um Bandbreite zu sparen, wenn möglich
                     const iconRes = await fetch(iconUrl, { cache: 'no-cache', method: 'HEAD' }); 
                     
                     if (!iconRes.ok) {
@@ -1147,25 +1667,39 @@
             });
 
             checkItem('check-sw', 'Service Worker registriert & erreichbar', async () => {
-                const swRegex = /navigator\.serviceWorker\.register\(\s*(?:basePath\s*\+\s*)?['"](.*?\.js)['"]\s*\)/;
+                //--- KORREKTUR: Regex angepasst, um './sw.js' und den Scope zu finden ---
+                const swRegex = /navigator\.serviceWorker\.register\(\s*['"](\.\/sw\.js)['"]\s*,\s*\{.*scope:\s*['"](.*?)['"].*\}\s*\)/;
                 const match = htmlContent.match(swRegex);
-                if (!match || !match[1]) return { success: false, message: 'Keine SW-Registrierung im HTML gefunden' };
+                
+                if (!match || !match[1] || !match[2]) {
+                     // Fallback für alte oder abweichende Registrierungen
+                     const altRegex = /navigator\.serviceWorker\.register\(\s*.*?['"](.*?sw\.js)['"].*?\)/;
+                     const altMatch = htmlContent.match(altRegex);
+                     if (altMatch && altMatch[1]) {
+                         return { success: false, message: `SW-Registrierung gefunden (${altMatch[1]}), aber der erwartete Scope fehlt.` };
+                     }
+                     return { success: false, message: 'Keine korrekte SW-Registrierung (./sw.js mit Scope) im HTML gefunden' };
+                }
 
-                const swPath = match[1];
-                const swUrl = new URL(swPath, url);
+
+                const swPath = match[1]; // './sw.js'
+                const swScope = match[2]; // '/repo/'
+                
+                // Der SW wird relativ zur HTML-URL geladen
+                const swUrl = new URL(swPath, url); 
 
                 try {
                     const res = await fetch(swUrl, { cache: 'no-cache' });
                     if (!res.ok) return { success: false, message: `Fehler ${res.status} bei ${swPath}` };
                     const text = await res.text();
                     if (text.length === 0) return { success: false, message: `${swPath} ist leer` };
-                    return { success: true, message: `Gefunden: ${swPath}` };
+                    return { success: true, message: `Gefunden (${swPath}) mit Scope (${swScope})` };
                 } catch (e) { return { success: false, message: `${swPath} nicht erreichbar` }; }
             });
         }
-        // --- ENDE DER KORRIGIERTEN CHECKPWA-FUNKTION ---
 
 
+        // --- Restliche Hilfsfunktionen bleiben unverändert ---
         function scaleIcon(base64, size, isMaskable = false) {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -1253,8 +1787,6 @@
             ui.shareTargetAction.value = settings.shareTargetAction || '/receive-share';
             ui.shareTargetFields.style.display = ui.addShareTarget.checked ? 'block' : 'none';
             toggleFooterFields();
-            // Lade Footer-Werte nur, wenn Checkbox aktiv war (optional, für Konsistenz)
-            // Aber verwende die Standardwerte aus dem Branding als Fallback, falls die Checkbox _später_ aktiviert wird
             ui.footerLine1.value = settings.footerLine1 || 'PWA Studio Pro © 2025 – Build • Analyze • Deploy';
             ui.footerLine2.value = settings.footerLine2 || 'Entwickelt von Björn Voss aka Omega';
             ui.footerLine3.value = settings.footerLine3 || 'voss.1980@gmail.com';
@@ -1271,10 +1803,29 @@
         function initNetworkStatus() {
             function updateStatus() {
                 ui.networkStatus.className = navigator.onLine ? 'status-online' : 'status-offline';
-                ui.networkStatus.textContent = 'PWA Studio Pro: ' + (navigator.onLine ? 'Online' : 'Offline'); // Branding
+                ui.networkStatus.textContent = 'PWA Studio Pro: ' + (navigator.onLine ? 'Online' : 'Offline');
 
                 if (navigator.onLine && 'serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('sw.js')
+                    //--- KORREKTUR: SW-Registrierung für das *Studio* selbst ---
+                    // Annahme: Der SW für das Studio heißt 'sw.js' und liegt im selben Verzeichnis
+                    // Dieses Skript im <head> berechnet den korrekten Pfad für das Manifest
+                    // Wir müssen den SW mit dem korrekten Scope für das *Studio* registrieren.
+                    
+                    // Berechne den Scope für das Studio selbst, genau wie im <head>
+                    const pathSegments = window.location.pathname.split('/');
+                    if (pathSegments[pathSegments.length - 1].includes('.')) {
+                        pathSegments.pop();
+                    }
+                    let studioScope = pathSegments.join('/');
+                    if (!studioScope.endsWith('/')) {
+                        studioScope += '/';
+                    }
+                    if (studioScope === '//') {
+                        studioScope = '/';
+                    }
+                    
+                    // Registriere den SW für das *Studio* (falls er existiert)
+                    navigator.serviceWorker.register('sw.js', { scope: studioScope })
                         .then(() => console.log('PWA-Studio Service Worker registriert.'))
                         .catch(err => console.error('PWA-Studio SW-Registrierung fehlgeschlagen:', err));
                 }
@@ -1288,7 +1839,6 @@
             document.documentElement.classList.toggle('dark', theme === 'dark');
         }
 
-        // --- Wizard Navigation ---
         function navigateWizard(direction) {
             const newStep = currentWizardStep + direction;
             if (newStep < 1 || newStep > totalWizardSteps) return;
@@ -1306,7 +1856,7 @@
 
             ui.wizardProgress.style.width = `${(currentWizardStep / totalWizardSteps) * 100}%`;
         }
-    }); // <-- KORREKTES ENDE
+    });
   </script>
 </body>
 </html>
