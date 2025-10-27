@@ -14,8 +14,6 @@
 
   <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
-  <link rel="manifest" href="manifest.json">
-
   <style>
     /* ... (alle CSS-Stile bleiben unverändert) ... */
     :root {
@@ -308,41 +306,25 @@
   </style>
 
     <script>
-      //--- ENTFERNT: Das ursprüngliche basePath-Skript wurde entfernt, da es in downloadZip() nicht mehr benötigt wird ---
-      // const basePath = ...
-      
-      //--- STATTDESSEN: Das Manifest wird jetzt statisch im <head> (siehe unten) ODER ---
-      //--- dynamisch hinzugefügt, ABER bezogen auf den *aktuellen* Pfad der Studio-App selbst.
-      //--- Dies stellt sicher, dass das *Studio* selbst eine PWA sein kann.
-      //--- Die *generierte* App erhält ihren eigenen Manifest-Link in downloadZip().
-      
+      //--- Dieses Skript setzt den Manifest-Pfad für das *PWA Studio selbst* ---
       (function() {
-          // Findet den relativen Pfad zum Manifest für das PWA Studio selbst
           const pathSegments = window.location.pathname.split('/');
-          // Entfernt den Dateinamen (z.B. index.html), falls vorhanden
           if (pathSegments[pathSegments.length - 1].includes('.')) {
               pathSegments.pop();
           }
           let basePath = pathSegments.join('/');
-          // Stellt sicher, dass der Pfad mit einem / endet (außer im Root)
           if (!basePath.endsWith('/')) {
               basePath += '/';
           }
-          // Wenn es sich im Root befindet (z.B. localhost:8080/), ist der Pfad nur '/'
           if (basePath === '//') {
               basePath = '/';
           }
-
           const manifestLink = document.createElement('link');
           manifestLink.rel = 'manifest';
-          // Verwendet den berechneten Pfad für das Manifest des *Studios*
           manifestLink.href = basePath + 'manifest.json'; 
           document.head.appendChild(manifestLink);
       })();
     </script>
-<style>body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}</style>
-<style>input, textarea, code { user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; }</style>
-  <link rel="manifest" href="./manifest.json">
 <style>body{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}</style>
 <style>input, textarea, code { user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; }</style>
 </head>
@@ -1177,7 +1159,7 @@ function promptUpdateItem(id, currentItem) {
         // --- ENDE: Supabase Code Generierung ---
 
 
-        // --- START: generatePWA stark angepasst (Option 3) ---
+        // --- START: generatePWA (KORRIGIERTE VERSION) ---
         async function generatePWA() {
             const v = {
                 user: ui.githubUser.value.trim(), repo: ui.repoName.value.trim().replace(/\s+/g, '-'), app: ui.appName.value.trim(), shortApp: ui.appShortName.value.trim() || ui.appName.value.trim(),
@@ -1211,6 +1193,8 @@ function promptUpdateItem(id, currentItem) {
                 
                 // --- KORREKTUR: Das shareReceiverHtml benötigt jetzt den korrigierten SW-Registrierungscode ---
                 const repoPath = `/${v.repo}/`;
+                
+                // KORREKTUR: <script> escapen (Fix für Meta-Workflow)
                 const shareSWCode = `
   <script>
     if ('serviceWorker' in navigator) {
@@ -1219,103 +1203,49 @@ function promptUpdateItem(id, currentItem) {
         .then(() => console.log('Service Worker registered:', repoPath))
         .catch(err => console.error('SW registration failed:', err));
     }
-  <\/script>`;
+  <\/sc` + `ript>`;
+                
+                // KORREKTUR: <script> für FAB escapen (Fix für Meta-Workflow)
+                const shareFabScript = `
+<script>
+  let deferredPrompt;
+  const installButton = document.getElementById('installFab');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installButton) {
+      installButton.style.display = 'flex';
+    }
+  });
+  if (installButton) {
+    installButton.addEventListener('click', async () => {
+      installButton.style.display = 'none';
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('User choice:', outcome);
+        deferredPrompt = null;
+      }
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+     if (installButton) {
+        installButton.style.display = 'none';
+     }
+    deferredPrompt = null;
+    console.log('PWA wurde installiert');
+  });
+<\/sc` + `ript>`;
 
+                // KORREKTUR: <script> für URL-Parameter escapen (Fix für Meta-Workflow)
                 pwaArtifacts.shareReceiverHtml = `<!DOCTYPE html><html><head><title>Empfangene Daten</title><link rel="manifest" href="./manifest.json"></head><body><h1>Geteilte Inhalte:</h1><script>const p=new URLSearchParams(window.location.search);document.body.innerHTML+='<p><b>Titel:</b> '+(p.get('title')||'N/A')+'</p><p><b>Text:</b> '+(p.get('text')||'N/A')+'</p><p><b>URL:</b> '+(p.get('url')||'N/A')+'</p>';<\/sc`+`ript>
   ${shareSWCode}
 <button id="installFab" title="App installieren" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background-color: #1e40af; color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000; justify-content: center; align-items: center;">
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
 </button>
-<script>
-  let deferredPrompt;
-  const installButton = document.getElementById('installFab');
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (installButton) {
-      installButton.style.display = 'flex';
-    }
-  });
-  if (installButton) {
-    installButton.addEventListener('click', async () => {
-      installButton.style.display = 'none';
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log('User choice:', outcome);
-        deferredPrompt = null;
-      }
-    });
-  }
-  window.addEventListener('appinstalled', () => {
-     if (installButton) {
-        installButton.style.display = 'none';
-     }
-    deferredPrompt = null;
-    console.log('PWA wurde installiert');
-  });
-<\/script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      // KORREKTUR 2: Scope auf Repository-Pfad setzen
-      const repoPath = '/PWA-Studio-Pro/';
-      navigator.serviceWorker.register('./sw.js', { scope: repoPath })
-        .then((reg) => console.log('Service Worker registered:', reg.scope))
-        .catch(err => console.error('SW registration failed:', err));
-    }
-  </script>
-
-<button id="installFab" title="App installieren" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background-color: #1e40af; color: white; border: none; border-radius: 50%; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000; justify-content: center; align-items: center;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-</button>
-
-<script>
-  let deferredPrompt;
-  const installButton = document.getElementById('installFab');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (installButton) {
-      installButton.style.display = 'flex';
-    }
-  });
-
-  if (installButton) {
-    installButton.addEventListener('click', async () => {
-      installButton.style.display = 'none';
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log('User choice:', outcome);
-        deferredPrompt = null;
-      }
-    });
-  }
-
-  window.addEventListener('appinstalled', () => {
-     if (installButton) {
-        installButton.style.display = 'none';
-     }
-    deferredPrompt = null;
-    console.log('PWA wurde installiert');
-  });
-</script>
-</body></html>`;
+${shareFabScript}</body></html>`;
             }
             pwaArtifacts.manifest = JSON.stringify(manifestObject, null, 2);
-
-            //--- KORREKTUR: Alle Assets im Cache müssen den 'startUrl' (Repo-Pfad) verwenden ---
-            const assetsToCache = [
-                `${startUrl}`, 
-                `${startUrl}index.html`, 
-                // WICHTIG: Manifest und SW selbst werden relativ vom Root geladen, 
-                // aber der *Inhalt* des SW muss die Pfade *innerhalb* seines Scopes cachen.
-                './manifest.json', // relative Pfade für SW-Caching
-                './offline.html',
-                './icons/icon-192x192.png',
-                './icons/icon-512x512.png'
-            ];
             
             // Korrigierte Caching-Pfade:
             // Der SW registriert sich mit scope '/repo/'. 
@@ -1404,6 +1334,8 @@ function promptUpdateItem(id, currentItem) {
                 const vapidKey = ui.vapidKeyInput.value.trim() || 'YOUR_PUBLIC_VAPID_KEY';
                 // Füge Push-Code *nach* Supabase-Code ein, falls vorhanden
                 appJsContent += `\n\n// --- Push Notification Code ---\nconsole.log('Push script active.'); const publicVapidKey = '${vapidKey}';\n`;
+                
+                // KORREKTUR: <script> escapen (auch wenn auskommentiert, zur Sicherheit) (Fix für Meta-Workflow)
                 appJsContent += `
 /* async function registerPush() {
   if (!('serviceWorker' in navigator)) return;
@@ -1451,7 +1383,7 @@ function promptUpdateItem(id, currentItem) {
         // --- ENDE: generatePWA ---
 
 
-        // --- downloadZip: Angepasst, prüft pwaArtifacts.appJs ---
+        // --- downloadZip: (KORRIGIERTE VERSION) ---
         async function downloadZip() {
             if (!pwaArtifacts.manifest) return;
             ui.downloadButton.disabled = true; ui.downloadButton.textContent = '...';
@@ -1461,17 +1393,14 @@ function promptUpdateItem(id, currentItem) {
                 let html = correctedHtmlForZip || `<!DOCTYPE html><html><head><title>${ui.appName.value}</title></head><body></body></html>`;
 
                 // --- KORREKTUR 1 & 4: Dynamisches Head-Skript entfernt ---
-                // const dynamicHeadScript = ... (ENTFERNT)
-
-                // --- KORREKTUR 2 & 4: Dynamisches Body-Skript entfernt ---
-                // const dynamicBodyScript = ... (ENTFERNT)
+                // (ENTFERNT)
                 
                 // --- KORREKTUR 2: Repository-Pfad für SW Scope holen ---
-                // Holt den Repo-Namen aus dem UI-Feld (Schritt 1 des Assistenten)
                 const repoName = ui.repoName.value.trim().replace(/\s+/g, '-') || 'my-pwa';
                 const repoPath = `/${repoName}/`; // z.B. /my-awesome-pwa/
 
                 // --- KORREKTUR 2: Statisches Body-Skript mit korrektem Scope ---
+                // --- KORREKTUR 5: <script> MUSS escaped werden! (Fix für Meta-Workflow) ---
                 const staticBodyScript = `
   <script>
     if ('serviceWorker' in navigator) {
@@ -1481,7 +1410,7 @@ function promptUpdateItem(id, currentItem) {
         .then((reg) => console.log('Service Worker registered:', reg.scope))
         .catch(err => console.error('SW registration failed:', err));
     }
-  <\/script>`;
+  <\/sc` + `ript>`;
 
                 // --- KORREKTUR 1: Statisches Manifest-Link einfügen ---
                 html = html.replace('</head>', `  <link rel="manifest" href="./manifest.json">\n</head>`);
@@ -1491,10 +1420,10 @@ function promptUpdateItem(id, currentItem) {
 
                 const themeColor = ui.themeColor.value;
                 if (html.includes('<meta name="theme-color"')) {
-                    // KORREKTUR 3: Dies war bereits korrekt und verwendet die ${themeColor} Variable
-                    html = html.replace(/<meta name="theme-color" content="[^"]*">/g, `<meta name="theme-color" content="#1e40af">`); 
+                    // KORREKTUR 3: Dies war bereits korrekt
+                    html = html.replace(/<meta name="theme-color" content="[^"]*">/g, `<meta name="theme-color" content="${themeColor}">`); 
                 } else {
-                    html = html.replace('</head>', `  <meta name="theme-color" content="#1e40af">\n</head>`);
+                    html = html.replace('</head>', `  <meta name="theme-color" content="${themeColor}">\n</head>`);
                 }
 
                 if (document.querySelector('input[name="userSelect"]:checked').value === 'disabled') {
@@ -1509,6 +1438,7 @@ function promptUpdateItem(id, currentItem) {
 
                 // --- app.js nur hinzufügen/verlinken, wenn sie existiert ---
                 if (pwaArtifacts.appJs) { 
+                    // KORREKTUR 5: <script> escapen (Fix für Meta-Workflow)
                     html = html.replace(/<\/body>/i, `<script type="module" src="app.js"><\/sc`+`ript>\n$&`);
                     zip.file('app.js', pwaArtifacts.appJs);
                 }
@@ -1530,6 +1460,7 @@ function promptUpdateItem(id, currentItem) {
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
 </button>`;
 
+                // --- KORREKTUR 5: <script> MUSS escaped werden! (Fix für Meta-Workflow) ---
                 const fabScript = `
 <script>
   let deferredPrompt;
@@ -1562,7 +1493,7 @@ function promptUpdateItem(id, currentItem) {
     deferredPrompt = null;
     console.log('PWA wurde installiert');
   });
-<\/script>`;
+<\/sc` + `ript>`;
 
                 html = html.replace('</body>', `${fabHtml}\n${fabScript}\n</body>`);
 
@@ -1584,7 +1515,7 @@ function promptUpdateItem(id, currentItem) {
         // --- ENDE: downloadZip ---
 
 
-        // --- checkPwa bleibt unverändert ---
+        // --- checkPwa (KORRIGIERTE VERSION) ---
         async function checkPwa() {
             const url = ui.pwaUrlInput.value.trim();
             if (!url || !url.startsWith('http')) {
@@ -1611,9 +1542,7 @@ function promptUpdateItem(id, currentItem) {
 
             let htmlContent = '';
             try {
-                //--- KORREKTUR: CORS-Problem umgehen, indem ein einfacher Proxy verwendet wird (falls verfügbar)
-                //--- Für diese Demo verwenden wir 'no-cache' und hoffen das Beste, da wir keinen Proxy haben.
-                const response = await fetch(url, { cache: 'no-cache', mode: 'cors' }); // Mode 'cors' ist Standard, aber 'no-cache' ist wichtig
+                const response = await fetch(url, { cache: 'no-cache', mode: 'cors' }); 
                 if (!response.ok) throw new Error(`HTML nicht erreichbar: ${response.status}`);
                 htmlContent = await response.text();
             } catch (e) {
@@ -1654,7 +1583,6 @@ function promptUpdateItem(id, currentItem) {
                     // Teste das erste Icon
                     const iconSrc = manifest.icons[0].src;
                     const iconUrl = new URL(iconSrc, manifestUrl);
-                    // Verwende 'HEAD' um Bandbreite zu sparen, wenn möglich
                     const iconRes = await fetch(iconUrl, { cache: 'no-cache', method: 'HEAD' }); 
                     
                     if (!iconRes.ok) {
@@ -1693,7 +1621,7 @@ function promptUpdateItem(id, currentItem) {
                     if (!res.ok) return { success: false, message: `Fehler ${res.status} bei ${swPath}` };
                     const text = await res.text();
                     if (text.length === 0) return { success: false, message: `${swPath} ist leer` };
-                    return { success: true, message: `Gefunden (${swPath}) mit Scope (${swScope})` };
+                    return { success: true, message: `Gefunden: ${swPath} (Scope: ${swScope})` };
                 } catch (e) { return { success: false, message: `${swPath} nicht erreichbar` }; }
             });
         }
@@ -1807,9 +1735,6 @@ function promptUpdateItem(id, currentItem) {
 
                 if (navigator.onLine && 'serviceWorker' in navigator) {
                     //--- KORREKTUR: SW-Registrierung für das *Studio* selbst ---
-                    // Annahme: Der SW für das Studio heißt 'sw.js' und liegt im selben Verzeichnis
-                    // Dieses Skript im <head> berechnet den korrekten Pfad für das Manifest
-                    // Wir müssen den SW mit dem korrekten Scope für das *Studio* registrieren.
                     
                     // Berechne den Scope für das Studio selbst, genau wie im <head>
                     const pathSegments = window.location.pathname.split('/');
@@ -1825,8 +1750,9 @@ function promptUpdateItem(id, currentItem) {
                     }
                     
                     // Registriere den SW für das *Studio* (falls er existiert)
+                    // WICHTIG: Der SW für das Studio muss 'sw.js' heißen und im Root des Studios liegen
                     navigator.serviceWorker.register('sw.js', { scope: studioScope })
-                        .then(() => console.log('PWA-Studio Service Worker registriert.'))
+                        .then((reg) => console.log('PWA-Studio Service Worker registriert.', reg.scope))
                         .catch(err => console.error('PWA-Studio SW-Registrierung fehlgeschlagen:', err));
                 }
             }
