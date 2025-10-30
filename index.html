@@ -1633,7 +1633,7 @@ checkItem('check-manifest', 'Manifest & Icons sind gültig', async () => {
 
 checkItem('check-sw', 'Service Worker registriert & erreichbar', async () => {
     //--- KORREKTUR: Regex angepasst, um './sw.js' und den Scope zu finden ---
-    const swRegex = /navigator\.serviceWorker\.register\(\s*['"](\.?\/?sw\.js)['"]\s*,\s*\{.*scope:\s*['"](.*?)['"].*\}\s*\)/;
+    const swRegex = /navigator\.serviceWorker\.register\(\s*['"](\.?\/?sw\.js)['"]\s*,\s*\{.*scope:\s*(['"](.*?)['"]|([a-zA-Z0-9_]+)).*\}\s*\)/s
     const match = htmlContent.match(swRegex);
     
     if (!match || !match[1] || !match[2]) {
