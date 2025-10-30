@@ -1633,7 +1633,7 @@ checkItem('check-manifest', 'Manifest & Icons sind gültig', async () => {
 
 checkItem('check-sw', 'Service Worker registriert & erreichbar', async () => {
     //--- KORREKTUR: Regex angepasst, um './sw.js' und den Scope zu finden ---
-    const swRegex = /navigator\.serviceWorker\.register\(\s*['"](\.?\/?sw\.js)['"]\s*,\s*\{.*scope:\s*(['"](.*?)['"]|([a-zA-Z0-9_]+)).*\}\s*\)/s
+    const swRegex = /navigator\.serviceWorker\.register\(\s*['"](\.?\/?sw\.js)['"]\s*,\s*\{.*?scope:\s*(['"](.*?)['"]|([a-zA-Z0-9_]+)).*?\}\s*\)/s;
     const match = htmlContent.match(swRegex);
     
     if (!match || !match[1] || !match[2]) {
@@ -1648,7 +1648,7 @@ checkItem('check-sw', 'Service Worker registriert & erreichbar', async () => {
 
 
     const swPath = match[1]; // './sw.js'
-    const swScope = match[2]; // '/repo/'
+    const swScope = match[3] || match[4]; // Holt den Inhalt der Anführungszeichen (Gruppe 3) ODER den Variablennamen (Gruppe 4)
     
     // Der SW wird relativ zur HTML-URL geladen
     const swUrl = new URL(swPath, url); 
